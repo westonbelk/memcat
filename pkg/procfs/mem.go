@@ -1,29 +1,30 @@
 package procfs
 
 import (
-    "fmt"
     "os"
+    "io"
 )
 
-func (p *Process) Bytes(m Mapping) ([]byte, error) {
-    if !m.Perms.Read {
-        return nil, fmt.Errorf("mapped memory region does not have read permissions")
-    }
+func (p *Process) PipeBytes(m Mapping) (error) {
+    r, w := io.Pipe()
+    defer w.Close()
 
-    bufSize := (m.AddressEnd - m.AddressStart)-1
-    buf := make([]byte, bufSize, bufSize)
-    
-    memPath := fmt.Sprintf("/proc/%s/mem", p.Pid)
-    memFD, err := os.Open(memPath)
+    go func() {
+        defer r.Close()
+        if _, err := io.Copy(os.Stdout, r); err != nil {
+            panic(err)
+        }
+    }()
+
+    mapSize := int64((m.AddressEnd - m.AddressStart)-1)
+    memFD, err := os.Open(p.Directory()+"/mem")
     if err != nil {
-        return nil, err
+        panic(err)
     }
     defer memFD.Close()
-    
-    _, err = memFD.ReadAt(buf, int64(m.AddressStart))
-    if err != nil {
-        return nil, err
-    }
-    
-    return buf,nil
+
+    memFD.Seek(int64(m.AddressStart),0)
+    io.CopyN(w, memFD, mapSize)
+   
+    return nil
 }

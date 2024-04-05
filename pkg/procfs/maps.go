@@ -10,8 +10,8 @@ import (
 
 
 
-func pidDir(pid Pid) string {
-    return fmt.Sprintf("/proc/%s", pid)
+func (p *Process) Directory() string {
+    return fmt.Sprintf("/proc/%s", p.Pid)
 }
 
 func parseMappingFields(entry []string) (Mapping, error) {
@@ -92,10 +92,8 @@ func parseMappingFields(entry []string) (Mapping, error) {
 }
 
 
-func ReadMap(pid Pid) ([]Mapping, error) {
-    dir := pidDir(pid)
-    mapsLocation := fmt.Sprintf("%s/maps", dir)
-    fmt.Printf("Reading file at %s\n", mapsLocation)
+func ReadMap(p *Process) ([]Mapping, error) {
+    mapsLocation := fmt.Sprintf("%s/maps", p.Directory())
     
     mapsFile, err := util.ReadLines(mapsLocation)
     if err != nil {
@@ -115,24 +113,5 @@ func ReadMap(pid Pid) ([]Mapping, error) {
 
     return maps, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
