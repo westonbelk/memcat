@@ -1,5 +1,10 @@
 package procfs
 
+import (
+    "fmt"
+)
+
+
 type Process struct {
     Pid Pid
     Maps []Mapping
@@ -7,6 +12,12 @@ type Process struct {
 
 
 type Pid string
+
+
+func (p *Pid) Dir() string {
+    return fmt.Sprintf("/proc/%s", string(*p))
+}
+
 
 type Mapping struct{
     // Starting address space in the process that the mapping occupies
@@ -52,6 +63,7 @@ type Mapping struct{
     Pid* Pid
 }
 
+
 type Permset struct {
     Read bool
     Write bool
@@ -59,6 +71,7 @@ type Permset struct {
     Shared bool
     Private bool // (copy on write)
 }
+
 
 type Device struct {
     Major uint64

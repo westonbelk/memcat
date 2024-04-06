@@ -3,37 +3,46 @@ package main
 import (
     "fmt"
     "flag"
+    "os"
     "strconv"
     "github.com/westonbelk/procgrep/pkg/procfs"
 )
 
+var pidFlag int
+
+func initFlags() {
+    flag.IntVar(&pidFlag, "pid", -1, "PID to search")
+    flag.Parse()
+}
 
 func main() {
-    var pidFlag = flag.Int("pid", -1, "PID to search")
-    flag.Parse()
-    fmt.Printf("attaching to pid %d\n", *pidFlag)
-
-    pid := "self"
-    if *pidFlag > 0 {
-        pid = strconv.Itoa(*pidFlag)
-    }
+    initFlags()
+    fmt.Printf("attaching to pid %d\n", pidFlag)
     
-    process := procfs.Process{
-        Pid: procfs.Pid(pid),
-        Maps: nil,
+    // determine the pid
+    pid := procfs.Pid("self")
+    if pidFlag > 0 {
+        pid = procfs.Pid(strconv.Itoa(pidFlag))
     }
-    maps, err := procfs.ReadMap(&process)
+
+    // read current mapped memory spaces
+    maps, err := procfs.ReadMap(pid)
     if err != nil {
         panic(err)
     }
-    process.Maps = maps
 
+    // create process struct
+    process := procfs.Process{
+        Pid: pid,
+        Maps: maps,
+    }
+
+    // read maps
     for _, mapsEntry := range process.Maps {
         if mapsEntry.Perms.Read {
             err := process.PipeBytes(mapsEntry)
             if err != nil {
-                fmt.Println(err)
-                continue
+                fmt.Fprintf(os.Stderr, "%s for pathname %s\n", err, mapsEntry.Pathname)
             }
         }
     }

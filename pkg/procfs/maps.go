@@ -10,13 +10,13 @@ import (
 
 
 
-func (p *Process) Directory() string {
-    return fmt.Sprintf("/proc/%s", p.Pid)
-}
-
 func parseMappingFields(entry []string) (Mapping, error) {
-    if !(len(entry) == 5 || len(entry) == 6) {
+    if len(entry) < 5 {
         return Mapping{}, fmt.Errorf("unexpected number of fields in map entry: %d", len(entry))
+    }
+
+    if len(entry) > 6 {
+        entry[5] = strings.Join(entry[5:], "")
     }
 
     addresses := strings.SplitN(entry[0], "-", 2)
@@ -92,8 +92,8 @@ func parseMappingFields(entry []string) (Mapping, error) {
 }
 
 
-func ReadMap(p *Process) ([]Mapping, error) {
-    mapsLocation := fmt.Sprintf("%s/maps", p.Directory())
+func ReadMap(pid Pid) ([]Mapping, error) {
+    mapsLocation := fmt.Sprintf("%s/maps", pid.Dir())
     
     mapsFile, err := util.ReadLines(mapsLocation)
     if err != nil {
