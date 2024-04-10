@@ -11,13 +11,13 @@ import (
 var pidFlag int
 
 func initFlags() {
-    flag.IntVar(&pidFlag, "pid", -1, "PID to search")
+    flag.IntVar(&pidFlag, "pid", -1, "PID to export the memory of. Defaults to self.")
     flag.Parse()
 }
 
 func main() {
     initFlags()
-    fmt.Printf("attaching to pid %d\n", pidFlag)
+    fmt.Fprintf(os.Stderr, "attaching to pid %d\n", pidFlag)
     
     // determine the pid
     pid := procfs.Pid("self")
@@ -37,7 +37,7 @@ func main() {
         Maps: maps,
     }
 
-    // read maps
+    // read maps and output to stdout
     for _, mapsEntry := range process.Maps {
         if mapsEntry.Perms.Read {
             err := process.PipeBytes(mapsEntry)
