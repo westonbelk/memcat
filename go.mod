@@ -1,3 +1,3 @@
-module github.com/westonbelk/procgrep
+module github.com/westonbelk/memcat
 
 go 1.18

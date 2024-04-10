@@ -5,7 +5,7 @@ import (
     "strings"
     "strconv"
 
-    "github.com/westonbelk/procgrep/internal/util"
+    "github.com/westonbelk/memcat/internal/util"
 )
 
 

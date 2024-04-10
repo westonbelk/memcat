@@ -5,7 +5,7 @@ import (
     "flag"
     "os"
     "strconv"
-    "github.com/westonbelk/procgrep/pkg/procfs"
+    "github.com/westonbelk/memcat/pkg/procfs"
 )
 
 var pidFlag int
